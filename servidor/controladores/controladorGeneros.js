@@ -1,21 +1,20 @@
-const con = require('../lib/conexionbd');
+const con = require("../lib/conexionbd");
 
 function obtenerGeneros(req, res) {
+  console.log(req.query);
 
-    console.log(req.query);
+  let sql = "SELECT * FROM genero";
 
-    let sql = 'SELECT * FROM `genero`';
+  con.query(sql, (error, result) => {
+    if (error) res.send(error);
 
-    con.query(sql, (error, result) => {
-        if(error) res.send(error);
-
-        let response = {
-            'generos': result
-        };
-        res.send(response);
-    });
-};
+    let response = {
+      generos: result
+    };
+    res.send(response);
+  });
+}
 
 module.exports = {
-    obtenerGeneros : obtenerGeneros
+  obtenerGeneros: obtenerGeneros
 };
