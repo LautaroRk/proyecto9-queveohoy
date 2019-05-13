@@ -78,7 +78,7 @@ function ControladorPeliculas() {
                     console.log(servidor + "/peliculas?" + query);
                     //se ejecuta la funcion cargarListado() pasandole como parametro las peliculas que se obtuvieron
                     self.cargarListado(data.peliculas);
-                    //se ejecuta la fucion cargarBotones() pasandole el total de peliculas que se obtienen como resultado
+                    //se ejecuta la funcion cargarBotones() pasandole el total de peliculas que se obtienen como resultado
                     self.cargarBotones(data.total);
                 });
         },
@@ -105,7 +105,7 @@ function ControladorPeliculas() {
                     pelicula.click(function() {
                         window.location.href = "info.html?id=" + this.id;
                     });
-                    //se agrega la pelicula que al contenedor de peliculas
+                    //se agrega la pelicula al contenedor de peliculas
                     pelicula.appendTo($(".contenedor-peliculas"));
                     //esta pelicula no va a ser mas de la clase ejemplo-pelicula
                     pelicula.removeClass("ejemplo-pelicula");
@@ -144,7 +144,7 @@ function ControladorPeliculas() {
             $(".boton-pagina").click(function() {
                 //cada boton tiene como funcionalidad buscarPeliculas(). A esta funcion se le pasa como parametro
                 //el atributo "numero-pagina".
-                self.buscarPeliculas($(this).attr("numero-pagina"));
+                self.buscarPeliculas($(this).attr("numero-pagina"), cantidad_por_pagina);
                 scroll(0, 0);
             });
         }

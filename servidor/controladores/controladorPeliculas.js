@@ -4,7 +4,7 @@ function obtenerPeliculas(req, res) {
   console.log(req.query);
 
   // Pedido base
-  let sql = "SELECT * FROM pelicula";
+  let sql = "SELECT *, (contador) FROM pelicula";
 
   // Se inicializa el array que va a contener los filtros
   let filtros = [];
@@ -27,10 +27,14 @@ function obtenerPeliculas(req, res) {
     }
   }
 
+  // Se genera la sub-query contador y se inserta dentro de la query final
+  let contador =  '(' + sql.replace('*, (contador)', 'COUNT(id)') + ') AS total';
+  sql = sql.replace('(contador)', contador);
+
   // Se agregan el orden y el limite al pedido
   let orden = ` ORDER BY ${req.query.columna_orden} ${req.query.tipo_orden}`;
   sql = sql.concat(orden);
-  let limite = ` LIMIT ${req.query.pagina - 1}, ${req.query.cantidad}`;
+  let limite = ` LIMIT ${(req.query.pagina - 1) * req.query.cantidad}, ${req.query.cantidad}`;
   sql = sql.concat(limite);
 
   console.log(sql);
@@ -40,12 +44,43 @@ function obtenerPeliculas(req, res) {
     if (error) res.send(error);
 
     let response = {
-      peliculas: result
+      peliculas: result,
+      total: result.length ? result[0].total : 0
     };
+
+    console.log("SHOWN: ", response.peliculas.length);
+    console.log("TOTAL: ", response.total);
     res.send(response);
   });
+};
+
+function obtenerInfoPelicula(req, res) {
+
+  console.log(req.params);
+
+  // Se genera una query que devuelve la pelicula correspondiente al id con genero y actores
+  let sql = 'SELECT pelicula.*, genero.nombre AS genero, actor.nombre AS actor FROM pelicula '
+  + 'JOIN genero ON pelicula.genero_id = genero.id '
+  + 'JOIN actor_pelicula ON pelicula.id = actor_pelicula.pelicula_id '
+  + 'JOIN actor ON actor_pelicula.actor_id = actor.id '
+  + 'WHERE pelicula.id = ' + req.params.id;
+
+  console.log(sql);
+  con.query(sql, (error, result) => {
+    if(error) res.send(error);
+
+    let actores = result.map(element => element.actor);
+
+    let response = {
+      pelicula: result[0],
+      actores: actores
+    }
+
+    res.send(response);
+  })
 }
 
 module.exports = {
-  obtenerPeliculas: obtenerPeliculas
+  obtenerPeliculas: obtenerPeliculas,
+  obtenerInfoPelicula: obtenerInfoPelicula
 };

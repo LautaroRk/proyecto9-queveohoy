@@ -14,7 +14,7 @@
                 
                 pelicula = data.pelicula;
                 actores = data.actores;
-                genero = data.pelicula.nombre;
+                genero = data.pelicula.genero; //REVISAR
 
                 $(".imagen").attr("src", pelicula.poster);
                 $(".titulo, title").html(pelicula.titulo + " (" + pelicula.anio + ")");
@@ -27,7 +27,7 @@
                 $(".rank").html(pelicula.puntuacion + "/10");
                 var actores_string = '';
                 for (i = 0; i < actores.length; i++) {
-                    actores_string += actores[i].nombre + ", "
+                    actores_string += actores[i] + ", "
                 }
                 $(".actores").html(actores_string.slice(0, -2));
             },
