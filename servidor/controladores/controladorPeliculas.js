@@ -1,13 +1,12 @@
 const con = require("../lib/conexionbd");
 
 function obtenerPeliculas(req, res) {
-  console.log(req.query);
 
   // Pedido base
   let sql = "SELECT *, (contador) FROM pelicula";
 
   // Se inicializa el array que va a contener los filtros
-  let filtros = [];
+  const filtros = [];
 
   // Se agregan al array los filtros si fueron pasados por query
   if (req.query.titulo) filtros.push('titulo LIKE "%' + req.query.titulo + '%"');
@@ -37,44 +36,87 @@ function obtenerPeliculas(req, res) {
   let limite = ` LIMIT ${(req.query.pagina - 1) * req.query.cantidad}, ${req.query.cantidad}`;
   sql = sql.concat(limite);
 
-  console.log(sql);
-
   // Se envía la query
   con.query(sql, (error, result) => {
     if (error) res.send(error);
 
-    let response = {
+    const response = {
       peliculas: result,
       total: result.length ? result[0].total : 0
     };
 
-    console.log("SHOWN: ", response.peliculas.length);
-    console.log("TOTAL: ", response.total);
     res.send(response);
   });
 };
 
 function obtenerInfoPelicula(req, res) {
 
-  console.log(req.params);
+  const id = req.params.id;
 
-  // Se genera una query que devuelve la pelicula correspondiente al id con genero y actores
-  let sql = 'SELECT pelicula.*, genero.nombre AS genero, actor.nombre AS actor FROM pelicula '
+  let sql = 'SELECT pelicula.*, genero.nombre FROM pelicula '
   + 'JOIN genero ON pelicula.genero_id = genero.id '
-  + 'JOIN actor_pelicula ON pelicula.id = actor_pelicula.pelicula_id '
-  + 'JOIN actor ON actor_pelicula.actor_id = actor.id '
-  + 'WHERE pelicula.id = ' + req.params.id;
+  + 'WHERE pelicula.id = ' + id;
 
-  console.log(sql);
   con.query(sql, (error, result) => {
     if(error) res.send(error);
 
-    let actores = result.map(element => element.actor);
+    const pelicula = result[0];
+    const genero = result[0].nombre;
+
+    sql = 'SELECT actor.nombre FROM actor '
+    + 'JOIN actor_pelicula ON actor.id = actor_pelicula.actor_id '
+    + 'WHERE actor_pelicula.pelicula_id = ' + id;
+
+    con.query(sql, (error, result) => {
+      if (error) res.send(error);
+
+      const actores = result.map(element => element.nombre);
+
+      const response = {
+        pelicula: pelicula,
+        genero: genero,
+        actores: actores
+      };
+
+      res.send(response);
+    });
+  });
+};
+
+function recomendarPelicula(req, res) {
+  // Object.keys(req.query).forEach(query => console.log(query));
+
+  // Pedido base
+  let sql = 'SELECT pelicula.*, genero.nombre FROM pelicula JOIN genero ON pelicula.genero_id = genero.id';
+
+  // Se inicializa el array que va a contener los filtros
+  const filtros = []
+
+  // Se agregan al array los filtros si fueron pasados por query
+  if (req.query.anio_inicio) filtros.push(`pelicula.anio >= ${req.query.anio_inicio}`);
+  if (req.query.anio_fin) filtros.push(`pelicula.anio <= ${req.query.anio_fin}`);
+  if (req.query.puntuacion) filtros.push(`pelicula.puntuacion >= ${req.query.puntuacion}`);
+  if (req.query.genero) filtros.push(`genero.nombre = '${req.query.genero}'`);
+
+  // Si se pasaron filtros, estos son concatenados al pedido
+  if (filtros.length) {
+    sql = sql.concat(" WHERE ");
+    for (let i = 0; i < filtros.length; i++) {
+      sql = sql.concat(filtros[i]);
+
+      // Si NO es el último, se prepara para concatenar el siguiente
+      if (i < filtros.length - 1) {
+        sql = sql.concat(" AND ");
+      }
+    }
+  }
+
+  con.query(sql, (error, result) => {
+    if (error) res.send(error);
 
     let response = {
-      pelicula: result[0],
-      actores: actores
-    }
+      peliculas: result
+    };
 
     res.send(response);
   })
@@ -82,5 +124,6 @@ function obtenerInfoPelicula(req, res) {
 
 module.exports = {
   obtenerPeliculas: obtenerPeliculas,
-  obtenerInfoPelicula: obtenerInfoPelicula
+  obtenerInfoPelicula: obtenerInfoPelicula,
+  recomendarPelicula: recomendarPelicula
 };
