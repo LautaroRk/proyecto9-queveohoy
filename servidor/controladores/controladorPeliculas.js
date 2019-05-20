@@ -9,19 +9,19 @@ function obtenerPeliculas(req, res) {
   const filtros = [];
 
   // Se agregan al array los filtros si fueron pasados por query
-  if (req.query.titulo) filtros.push('titulo LIKE "%' + req.query.titulo + '%"');
-  if (req.query.genero) filtros.push("genero_id = " + req.query.genero);
-  if (req.query.anio) filtros.push("anio = " + req.query.anio);
+  if (req.query.titulo) filtros.push(`titulo LIKE '%${req.query.titulo}%'`);
+  if (req.query.genero) filtros.push(`genero_id = ${req.query.genero}`);
+  if (req.query.anio) filtros.push(`anio = ${req.query.anio}`);
 
   // Si se pasaron filtros, estos son concatenados al pedido
   if (filtros.length) {
-    sql = sql.concat(" WHERE ");
+    sql += " WHERE ";
     for (let i = 0; i < filtros.length; i++) {
-      sql = sql.concat(filtros[i]);
+      sql += filtros[i];
 
       // Si NO es el último, se prepara para concatenar el siguiente
       if (i < filtros.length - 1) {
-        sql = sql.concat(" AND ");
+        sql += " AND ";
       }
     }
   }
@@ -32,9 +32,9 @@ function obtenerPeliculas(req, res) {
 
   // Se agregan el orden y el limite al pedido
   let orden = ` ORDER BY ${req.query.columna_orden} ${req.query.tipo_orden}`;
-  sql = sql.concat(orden);
+  sql += orden;
   let limite = ` LIMIT ${(req.query.pagina - 1) * req.query.cantidad}, ${req.query.cantidad}`;
-  sql = sql.concat(limite);
+  sql += limite;
 
   // Se envía la query
   con.query(sql, (error, result) => {
@@ -84,7 +84,6 @@ function obtenerInfoPelicula(req, res) {
 };
 
 function recomendarPelicula(req, res) {
-  // Object.keys(req.query).forEach(query => console.log(query));
 
   // Pedido base
   let sql = 'SELECT pelicula.*, genero.nombre FROM pelicula JOIN genero ON pelicula.genero_id = genero.id';

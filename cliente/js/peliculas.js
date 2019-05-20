@@ -78,8 +78,8 @@ function ControladorPeliculas() {
                     console.log(servidor + "/peliculas?" + query);
                     //se ejecuta la funcion cargarListado() pasandole como parametro las peliculas que se obtuvieron
                     self.cargarListado(data.peliculas);
-                    //se ejecuta la funcion cargarBotones() pasandole el total de peliculas que se obtienen como resultado
-                    self.cargarBotones(data.total);
+                    //se ejecuta la funcion cargarBotones() pasandole el total de peliculas que se obtienen como resultado y el numero de pagina
+                    self.cargarBotones(data.total, pagina_solicitada);
                 });
         },
 
@@ -118,7 +118,7 @@ function ControladorPeliculas() {
 
         //esta función recibe como parámetro el total de películas que se obtienen como resultado. Según esa cantidad 
         //crea los botones de la paginación y les da la funcionalidad correspondiente
-        this.cargarBotones = function(total) {
+        this.cargarBotones = function(total, pagina) {
             //se establece que se van a mostrar 52 resultados por pagina
             var cantidad_por_pagina = 52;
             var self = this;
@@ -134,13 +134,23 @@ function ControladorPeliculas() {
                 boton.html(i + 1);
                 //le asignamos el atributo numero de pagina
                 boton.attr("numero-pagina", i + 1);
+                //se le agrega la clase 'active' al boton correspondiente a la pagina actual
+                if (boton.attr("numero-pagina") === pagina) boton.addClass("active");
                 //agregamos el botón al contenedor de botones
                 boton.appendTo($(".btn-group"));
+                //se marca la pagina 1
+                if (i === 0) boton.addClass("first");
                 //este botón no va a ser mas de la clase ejemplo-boton
                 boton.removeClass("ejemplo-boton");
+                
                 //se muestra el botón creado
                 boton.show();
             }
+
+            if (!$(".boton-pagina.active").length) {
+                $(".boton-pagina.first").addClass("active");
+            };
+
             $(".boton-pagina").click(function() {
                 //cada boton tiene como funcionalidad buscarPeliculas(). A esta funcion se le pasa como parametro
                 //el atributo "numero-pagina".
